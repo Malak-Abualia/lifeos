@@ -5,7 +5,6 @@
       "name": "lifeos-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "cwd": "lifeos",
       "port": 3000
     }
   ]
