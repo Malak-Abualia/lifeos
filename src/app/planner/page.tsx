@@ -1,11 +1,26 @@
 import type { Metadata } from "next";
 
-import { ModulePlaceholder } from "@/widgets/module-placeholder/module-placeholder";
+import { db } from "@/shared/lib/db";
+import { startOfToday } from "@/shared/lib/dates";
+import { Planner } from "@/widgets/planner/planner";
 
-export const metadata: Metadata = {
-  title: "Daily Planner",
-};
+export const metadata: Metadata = { title: "Daily Planner" };
+export const dynamic = "force-dynamic";
 
-export default function Page() {
-  return <ModulePlaceholder href="/planner" />;
+export default async function PlannerPage() {
+  const tasks = await db.task.findMany({
+    where: { date: startOfToday() },
+    orderBy: [{ startMinute: "asc" }],
+    select: {
+      id: true,
+      title: true,
+      startMinute: true,
+      durationMin: true,
+      priority: true,
+      area: true,
+      done: true,
+    },
+  });
+
+  return <Planner tasks={tasks} />;
 }

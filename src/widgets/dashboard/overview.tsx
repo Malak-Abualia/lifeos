@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   Area,
   AreaChart,
@@ -18,6 +18,7 @@ import {
   Target,
   Timer,
   HeartPulse,
+  ArrowRight,
 } from "lucide-react";
 
 import { Badge } from "@/shared/ui/badge";
@@ -29,75 +30,29 @@ import {
   GlassCardTitle,
 } from "@/shared/ui/glass-card";
 import { Progress } from "@/shared/ui/progress";
+import { Stagger, Rise } from "@/shared/ui/animate";
 import { cn } from "@/shared/lib/utils";
 
-/* ---------------------------------------------------------------- */
-/*  Demo data — replaced by Prisma queries in the dashboard module   */
-/* ---------------------------------------------------------------- */
+export interface DashboardData {
+  greeting: string;
+  stats: {
+    key: "focus" | "habits" | "goals" | "mood";
+    label: string;
+    value: string;
+    delta: string;
+    up: boolean;
+  }[];
+  momentum: { day: string; score: number }[];
+  streaks: { name: string; days: number; target: number }[];
+  today: { done: number; total: number };
+}
 
-const STATS = [
-  {
-    label: "Focus today",
-    value: "4.2h",
-    delta: "+18%",
-    up: true,
-    icon: Timer,
-  },
-  {
-    label: "Habit consistency",
-    value: "86%",
-    delta: "+4%",
-    up: true,
-    icon: Flame,
-  },
-  {
-    label: "Goals on track",
-    value: "5 / 7",
-    delta: "71%",
-    up: true,
-    icon: Target,
-  },
-  {
-    label: "Recovery",
-    value: "72",
-    delta: "-6",
-    up: false,
-    icon: HeartPulse,
-  },
-] as const;
-
-const MOMENTUM = [
-  { day: "Mon", score: 58 },
-  { day: "Tue", score: 64 },
-  { day: "Wed", score: 61 },
-  { day: "Thu", score: 74 },
-  { day: "Fri", score: 70 },
-  { day: "Sat", score: 82 },
-  { day: "Sun", score: 88 },
-];
-
-const STREAKS = [
-  { name: "Deep work", days: 12, target: 14 },
-  { name: "Morning run", days: 8, target: 10 },
-  { name: "Reading", days: 21, target: 21 },
-  { name: "No sugar", days: 4, target: 7 },
-];
-
-/* ---------------------------------------------------------------- */
-
-const container = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.06 } },
-};
-
-const item = {
-  hidden: { opacity: 0, y: 14 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: [0.32, 0.72, 0, 1] as const },
-  },
-};
+const STAT_ICON = {
+  focus: Timer,
+  habits: Flame,
+  goals: Target,
+  mood: HeartPulse,
+} as const;
 
 function MomentumTooltip({
   active,
@@ -119,67 +74,67 @@ function MomentumTooltip({
   );
 }
 
-export function DashboardOverview() {
+export function DashboardOverview({ data }: { data: DashboardData }) {
   return (
-    <motion.div
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="space-y-6"
-    >
+    <Stagger className="space-y-6">
       {/* Greeting */}
-      <motion.div variants={item}>
+      <Rise>
         <h2 className="text-2xl font-semibold tracking-tight">
-          Good morning<span className="text-ice">.</span>
+          {data.greeting}
+          <span className="text-ice">.</span>
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Momentum is building — here&apos;s where your week stands.
+          {data.today.done} of {data.today.total} tasks done today —
+          here&apos;s where your week stands.
         </p>
-      </motion.div>
+      </Rise>
 
       {/* Stat tiles */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {STATS.map((stat) => (
-          <motion.div key={stat.label} variants={item}>
-            <GlassCard interactive className="p-5">
-              <div className="flex items-start justify-between">
-                <span className="flex size-9 items-center justify-center rounded-xl border border-white/8 bg-white/4">
-                  <stat.icon className="size-4 text-ice" aria-hidden />
-                </span>
-                <Badge variant={stat.up ? "emerald" : "ruby"}>
-                  {stat.up ? (
-                    <ArrowUpRight aria-hidden />
-                  ) : (
-                    <ArrowDownRight aria-hidden />
-                  )}
-                  {stat.delta}
-                </Badge>
-              </div>
-              <p className="mt-4 text-[1.75rem] font-semibold leading-none tracking-tight tabular">
-                {stat.value}
-              </p>
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                {stat.label}
-              </p>
-            </GlassCard>
-          </motion.div>
-        ))}
+        {data.stats.map((stat) => {
+          const Icon = STAT_ICON[stat.key];
+          return (
+            <Rise key={stat.key}>
+              <GlassCard interactive className="p-5">
+                <div className="flex items-start justify-between">
+                  <span className="flex size-9 items-center justify-center rounded-xl border border-white/8 bg-white/4">
+                    <Icon className="size-4 text-ice" aria-hidden />
+                  </span>
+                  <Badge variant={stat.up ? "emerald" : "ruby"}>
+                    {stat.up ? (
+                      <ArrowUpRight aria-hidden />
+                    ) : (
+                      <ArrowDownRight aria-hidden />
+                    )}
+                    {stat.delta}
+                  </Badge>
+                </div>
+                <p className="mt-4 text-[1.75rem] font-semibold leading-none tracking-tight tabular">
+                  {stat.value}
+                </p>
+                <p className="mt-1.5 text-xs text-muted-foreground">
+                  {stat.label}
+                </p>
+              </GlassCard>
+            </Rise>
+          );
+        })}
       </div>
 
       {/* Momentum chart + streaks */}
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <motion.div variants={item} className="xl:col-span-2">
+        <Rise className="xl:col-span-2">
           <GlassCard className="h-full">
             <GlassCardHeader>
               <GlassCardTitle>Weekly momentum</GlassCardTitle>
               <GlassCardDescription>
-                Composite of focus, habits, and recovery — last 7 days
+                Composite of habits, mood, and training — last 7 days
               </GlassCardDescription>
             </GlassCardHeader>
             <GlassCardContent className="h-72">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={MOMENTUM}
+                  data={data.momentum}
                   margin={{ top: 8, right: 8, left: -18, bottom: 0 }}
                 >
                   <defs>
@@ -230,18 +185,18 @@ export function DashboardOverview() {
               </ResponsiveContainer>
             </GlassCardContent>
           </GlassCard>
-        </motion.div>
+        </Rise>
 
-        <motion.div variants={item}>
-          <GlassCard className="h-full">
+        <Rise>
+          <GlassCard className="flex h-full flex-col">
             <GlassCardHeader>
               <GlassCardTitle>Active streaks</GlassCardTitle>
               <GlassCardDescription>
-                Days in a row, against this week&apos;s target
+                Days in a row, against weekly target ×2
               </GlassCardDescription>
             </GlassCardHeader>
-            <GlassCardContent className="space-y-5">
-              {STREAKS.map((streak) => {
+            <GlassCardContent className="flex-1 space-y-5">
+              {data.streaks.map((streak) => {
                 const pct = Math.round((streak.days / streak.target) * 100);
                 const done = streak.days >= streak.target;
                 return (
@@ -268,10 +223,16 @@ export function DashboardOverview() {
                   </div>
                 );
               })}
+              <Link
+                href="/habits"
+                className="mt-2 inline-flex items-center gap-1.5 text-xs text-ice transition-colors hover:text-arctic"
+              >
+                All habits <ArrowRight className="size-3" aria-hidden />
+              </Link>
             </GlassCardContent>
           </GlassCard>
-        </motion.div>
+        </Rise>
       </div>
-    </motion.div>
+    </Stagger>
   );
 }

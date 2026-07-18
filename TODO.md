@@ -9,42 +9,45 @@ Milestones ship independently; each ends with a commit and a working app.
 - [x] Core UI primitives: Button, GlassCard, Badge, Progress, Tooltip, Kbd, Separator
 - [x] App shell: frosted sidebar with animated active pill, floating topbar
 - [x] Navigation registry (single source of truth for all 13 modules)
-- [x] Dashboard overview preview: stat tiles, momentum area chart, streaks
-- [x] Route stubs for all modules with premium placeholder state
 - [x] Validated chart palette (CVD-safe against #08111F surface)
 
-## M2 — Data layer
+## ✅ M2 — Data layer (shipped)
 
-- [ ] Prisma schema: Task, Habit, HabitLog, Goal, KeyResult, MoodEntry,
-      JournalEntry, Transaction, Workout, Course, CareerEvent
-- [ ] SQLite dev database + seed script with realistic demo data
-- [ ] Server actions + Zod validation per entity
-- [ ] Zustand stores for optimistic client state
+- [x] Prisma 7 schema: 12 domain models across all modules
+- [x] SQLite via better-sqlite3 driver adapter; dev-singleton client
+- [x] Deterministic seed: 120 days of correlated demo data
+- [x] Server actions + Zod validation (tasks, habits, mood, journal)
 
-## M3 — Execution modules
+## ✅ M3 — Execution modules (shipped)
 
-- [ ] Daily Planner: time-block timeline, task triage, drag to reschedule
-- [ ] Habit Tracker: heatmap year view, streak engine, quick check-in
-- [ ] Goal System: OKR tree, progress roll-up, quarterly view
+- [x] Daily Planner: time-block timeline with now-line, quick add, optimistic toggle
+- [x] Habit Tracker: 16-week heatmap, streak engine, one-tap check-in
+- [x] Goal System: OKR cards, progress rings, inverted-metric support
 
-## M4 — Wellbeing modules
+## ✅ M4 — Wellbeing modules (shipped)
 
-- [ ] Mood Tracker: emotional weather map, tagging, correlations
-- [ ] Journal: distraction-free editor, prompts, gratitude log
-- [ ] Fitness: training load chart, body metrics, PR board
+- [x] Mood Tracker: 30-day mood/energy chart, slider check-in, tag frequency
+- [x] Journal: RHF + Zod compose card, rotating prompts, gratitude blocks
+- [x] Fitness: weekly training load chart, PR board, recent sessions
 
-## M5 — Growth & resources
+## ✅ M5 — Growth & resources (shipped)
 
-- [ ] Learning Hub: course/book pipeline, skill tree
-- [ ] Career: timeline of wins, application kanban
-- [ ] Finance: cashflow sankey, budget envelopes, runway stat
+- [x] Learning Hub: three-stage pipeline, hours invested, progress bars
+- [x] Career: trajectory timeline, application pipeline with stage dots
+- [x] Finance: cashflow chart, category breakdown, sortable TanStack table
 
-## M6 — Intelligence & polish
+## ✅ M6 — Intelligence (shipped)
 
-- [ ] Executive Dashboard: live data from all modules
-- [ ] Analytics: cross-module correlations (TanStack Table + Recharts)
-- [ ] AI Insights: rule-based pattern surfacing
-- [ ] Settings: theme, data export, keyboard shortcuts reference
-- [ ] Command palette (⌘K) wired to navigation registry
-- [ ] Light theme pass; a11y audit (focus order, contrast, reduced motion)
+- [x] Executive Dashboard: live momentum composite, streaks, real stats
+- [x] Analytics: weekly indexed series + Pearson correlations + table view
+- [x] AI Insights: 6-rule pattern engine (mood×training, streaks, spending…)
+- [x] Settings: profile form (RHF+Zod), theme switch, JSON export API
+
+## M7 — Polish backlog (next)
+
+- [ ] Command palette (⌘K) wired to the navigation registry
+- [ ] Light theme full pass (tokens exist; glass utilities are dark-tuned)
+- [ ] Drag-to-reschedule blocks in Planner
+- [ ] Habit/goal/transaction CRUD dialogs (create & edit from the UI)
 - [ ] PostgreSQL production config + deployment notes
+- [ ] E2E smoke tests (Playwright)

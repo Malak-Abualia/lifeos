@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
-import { ModulePlaceholder } from "@/widgets/module-placeholder/module-placeholder";
+import { db } from "@/shared/lib/db";
+import { Finance } from "@/widgets/finance/finance";
 
-export const metadata: Metadata = {
-  title: "Finance",
-};
+export const metadata: Metadata = { title: "Finance" };
+export const dynamic = "force-dynamic";
 
-export default function Page() {
-  return <ModulePlaceholder href="/finance" />;
+export default async function FinancePage() {
+  const transactions = await db.transaction.findMany({
+    orderBy: { date: "desc" },
+  });
+  return <Finance transactions={transactions} />;
 }

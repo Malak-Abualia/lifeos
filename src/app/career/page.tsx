@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
-import { ModulePlaceholder } from "@/widgets/module-placeholder/module-placeholder";
+import { db } from "@/shared/lib/db";
+import { Career } from "@/widgets/career/career";
 
-export const metadata: Metadata = {
-  title: "Career",
-};
+export const metadata: Metadata = { title: "Career" };
+export const dynamic = "force-dynamic";
 
-export default function Page() {
-  return <ModulePlaceholder href="/career" />;
+export default async function CareerPage() {
+  const events = await db.careerEvent.findMany({
+    orderBy: { date: "desc" },
+  });
+  return <Career events={events} />;
 }

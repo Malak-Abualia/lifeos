@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 
-import { ModulePlaceholder } from "@/widgets/module-placeholder/module-placeholder";
+import { db } from "@/shared/lib/db";
+import { Learning } from "@/widgets/learning/learning";
 
-export const metadata: Metadata = {
-  title: "Learning Hub",
-};
+export const metadata: Metadata = { title: "Learning Hub" };
+export const dynamic = "force-dynamic";
 
-export default function Page() {
-  return <ModulePlaceholder href="/learning" />;
+export default async function LearningPage() {
+  const courses = await db.course.findMany({
+    orderBy: [{ status: "asc" }, { progress: "desc" }],
+  });
+  return <Learning courses={courses} />;
 }
