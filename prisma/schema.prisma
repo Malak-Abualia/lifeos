@@ -1,0 +1,147 @@
+// LifeOS domain schema — SQLite in dev, PostgreSQL in production.
+// SQLite has no native enums, so constrained strings are documented inline
+// and validated at the edge with Zod (src/shared/lib/validations.ts).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------------------------------------------------------------- Planner
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  notes       String?
+  date        DateTime // day the task is scheduled for
+  startMinute Int? // minutes from midnight; null = unscheduled backlog
+  durationMin Int      @default(30)
+  priority    String   @default("medium") // low | medium | high
+  area        String   @default("personal") // work | personal | health | growth
+  done        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+}
+
+// ---------------------------------------------------------------- Habits
+
+model Habit {
+  id            String     @id @default(cuid())
+  name          String
+  emoji         String     @default("✦")
+  targetPerWeek Int        @default(7)
+  accent        String     @default("ice") // ice | sapphire | emerald | ruby
+  createdAt     DateTime   @default(now())
+  logs          HabitLog[]
+}
+
+model HabitLog {
+  id      String   @id @default(cuid())
+  habitId String
+  date    DateTime
+  habit   Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@index([date])
+}
+
+// ---------------------------------------------------------------- Goals
+
+model Goal {
+  id         String      @id @default(cuid())
+  title      String
+  quarter    String // e.g. "2026-Q3"
+  area       String      @default("personal")
+  createdAt  DateTime    @default(now())
+  keyResults KeyResult[]
+}
+
+model KeyResult {
+  id      String @id @default(cuid())
+  goalId  String
+  title   String
+  current Float  @default(0)
+  target  Float
+  unit    String @default("") // "km", "books", "%", …
+  goal    Goal   @relation(fields: [goalId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------- Wellbeing
+
+model MoodEntry {
+  id     String   @id @default(cuid())
+  date   DateTime @unique
+  mood   Int // 1–10
+  energy Int // 1–10
+  tags   String   @default("") // comma-separated
+  note   String?
+}
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  date      DateTime
+  title     String
+  content   String
+  gratitude String?
+  createdAt DateTime @default(now())
+
+  @@index([date])
+}
+
+model Workout {
+  id          String   @id @default(cuid())
+  date        DateTime
+  type        String // run | strength | cycle | swim | yoga | climb
+  durationMin Int
+  load        Int // subjective training load 1–100
+  notes       String?
+
+  @@index([date])
+}
+
+model PersonalRecord {
+  id       String   @id @default(cuid())
+  exercise String
+  value    Float
+  unit     String
+  date     DateTime
+}
+
+// ---------------------------------------------------------------- Growth
+
+model Course {
+  id       String @id @default(cuid())
+  title    String
+  provider String
+  kind     String @default("course") // course | book | project
+  progress Int    @default(0) // 0–100
+  hours    Float  @default(0)
+  status   String @default("active") // active | queued | done
+}
+
+model CareerEvent {
+  id     String   @id @default(cuid())
+  date   DateTime
+  type   String // win | application | interview | offer | milestone
+  title  String
+  detail String?
+  status String? // for applications: applied | screening | interview | offer | rejected
+}
+
+// ---------------------------------------------------------------- Finance
+
+model Transaction {
+  id          String   @id @default(cuid())
+  date        DateTime
+  description String
+  category    String // income | housing | food | transport | leisure | health | tools | savings
+  amount      Float // positive = inflow, negative = outflow
+  account     String   @default("checking")
+
+  @@index([date])
+}
