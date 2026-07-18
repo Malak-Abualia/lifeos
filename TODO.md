@@ -51,3 +51,28 @@ Milestones ship independently; each ends with a commit and a working app.
 - [ ] Habit/goal/transaction CRUD dialogs (create & edit from the UI)
 - [ ] PostgreSQL production config + deployment notes
 - [ ] E2E smoke tests (Playwright)
+
+## ✅ M7 — Personal OS (shipped)
+
+- [x] Universal CRUD engine: entity registry → auto-generated validated
+      forms → generic save/delete server actions (all 11 entities)
+- [x] Edit/delete affordances in every module (hover row actions)
+- [x] ⌘K command palette: navigate anywhere + create anything
+- [x] Floating Quick Add on every page (task, workout, transaction,
+      journal, mood, career win)
+- [x] Daily Check-in page: habits, mood, journal, tomorrow's top 3 —
+      one submit, under 3 minutes
+- [x] Reviews: weekly / monthly / yearly summaries with deltas,
+      highlights, recommendations, and period-scoped insights
+- [x] Insight engine extracted and range-parameterized (shared by
+      AI Insights + Reviews)
+- [x] Demo data erased; seed guarded behind SEED_DEMO=1
+- [x] Settings danger zone (type-to-confirm erase) + first-run onboarding
+
+## M8 — Polish backlog (next)
+
+- [ ] Light theme full pass
+- [ ] Drag-to-reschedule blocks in Planner
+- [ ] Recurring tasks & habit reminders
+- [ ] PostgreSQL production config + deployment notes
+- [ ] E2E smoke tests (Playwright)

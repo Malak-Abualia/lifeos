@@ -2,10 +2,15 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Check, Flame } from "lucide-react";
+import { Check, Flame, Plus } from "lucide-react";
 
 import { toggleHabitToday } from "@/features/habits/actions";
+import { deleteEntity } from "@/features/crud/actions";
+import { useCommandStore } from "@/features/crud/store";
+import { toForm } from "@/features/crud/to-form";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { RowActions } from "@/shared/ui/row-actions";
 import {
   GlassCard,
   GlassCardContent,
@@ -59,6 +64,7 @@ function heat(count: number, total: number) {
 
 export function Habits({ habits }: { habits: HabitData[] }) {
   const router = useRouter();
+  const openEntity = useCommandStore((s) => s.openEntity);
   const [, startTransition] = React.useTransition();
   const [optimisticToday, setOptimisticToday] = React.useState<
     Record<string, boolean>
@@ -107,15 +113,32 @@ export function Habits({ habits }: { habits: HabitData[] }) {
       {/* Today check-in row */}
       <Rise>
         <GlassCard>
-          <GlassCardHeader className="flex-row items-baseline justify-between">
+          <GlassCardHeader className="flex-row items-center justify-between">
             <div>
               <GlassCardTitle>Today</GlassCardTitle>
               <GlassCardDescription>
                 {totalToday} of {habits.length} habits done — tap to check in
               </GlassCardDescription>
             </div>
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={() => openEntity("habit")}
+            >
+              <Plus /> New habit
+            </Button>
           </GlassCardHeader>
           <GlassCardContent className="flex flex-wrap gap-2.5">
+            {habits.length === 0 && (
+              <button
+                type="button"
+                onClick={() => openEntity("habit")}
+                className="w-full rounded-xl border border-dashed border-white/15 px-4 py-8 text-center text-xs text-steel transition-colors hover:border-ice/40 hover:text-ice"
+              >
+                No habits yet — create the first one. Small and daily beats
+                big and rare.
+              </button>
+            )}
             {habits.map((habit, i) => {
               const checked = isCheckedToday(i);
               return (
@@ -212,7 +235,7 @@ export function Habits({ habits }: { habits: HabitData[] }) {
           }
           return (
             <Rise key={habit.id}>
-              <GlassCard interactive className="p-5">
+              <GlassCard interactive className="group p-5">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-2.5 text-sm font-medium">
                     <span className="text-base" aria-hidden>
@@ -220,9 +243,26 @@ export function Habits({ habits }: { habits: HabitData[] }) {
                     </span>
                     {habit.name}
                   </span>
-                  <Badge variant={streak >= 7 ? "emerald" : "steel"}>
-                    <Flame aria-hidden /> {streak}d
-                  </Badge>
+                  <span className="flex items-center gap-1">
+                    <RowActions
+                      label={habit.name}
+                      onEdit={() =>
+                        openEntity("habit", {
+                          id: habit.id,
+                          initial: toForm.habit(habit),
+                        })
+                      }
+                      onDelete={() =>
+                        startTransition(async () => {
+                          await deleteEntity("habit", habit.id);
+                          router.refresh();
+                        })
+                      }
+                    />
+                    <Badge variant={streak >= 7 ? "emerald" : "steel"}>
+                      <Flame aria-hidden /> {streak}d
+                    </Badge>
+                  </span>
                 </div>
                 <div className="mt-4 flex items-end justify-between">
                   <div>

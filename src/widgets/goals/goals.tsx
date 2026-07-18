@@ -1,8 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
+import { Plus, Target } from "lucide-react";
 
+import { deleteEntity } from "@/features/crud/actions";
+import { useCommandStore } from "@/features/crud/store";
+import { toForm } from "@/features/crud/to-form";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { RowActions } from "@/shared/ui/row-actions";
 import {
   GlassCard,
   GlassCardContent,
@@ -94,6 +101,9 @@ function Ring({ pct, size = 52 }: { pct: number; size?: number }) {
 }
 
 export function Goals({ goals }: { goals: GoalData[] }) {
+  const router = useRouter();
+  const openEntity = useCommandStore((s) => s.openEntity);
+  const [, startTransition] = React.useTransition();
   const quarters = [...new Set(goals.map((g) => g.quarter))].sort();
   const overall =
     goals.length > 0
@@ -123,15 +133,37 @@ export function Goals({ goals }: { goals: GoalData[] }) {
               </p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             {quarters.map((q) => (
               <Badge key={q} variant="ice">
                 {q}
               </Badge>
             ))}
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={() => openEntity("goal")}
+            >
+              <Plus /> Set goal
+            </Button>
           </div>
         </GlassCard>
       </Rise>
+
+      {goals.length === 0 && (
+        <Rise>
+          <GlassCard className="flex flex-col items-center p-12 text-center">
+            <Target className="mb-3 size-6 text-ice" aria-hidden />
+            <p className="text-sm font-medium">No goals yet</p>
+            <p className="mt-1 max-w-xs text-xs text-muted-foreground">
+              Set a quarterly goal, then attach measurable key results to it.
+            </p>
+            <Button className="mt-4" size="sm" onClick={() => openEntity("goal")}>
+              <Plus /> Set your first goal
+            </Button>
+          </GlassCard>
+        </Rise>
+      )}
 
       {/* Goal cards */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -139,11 +171,26 @@ export function Goals({ goals }: { goals: GoalData[] }) {
           const pct = goalProgress(goal);
           return (
             <Rise key={goal.id}>
-              <GlassCard interactive className="h-full">
+              <GlassCard interactive className="group h-full">
                 <GlassCardHeader className="flex-row items-start justify-between gap-4">
-                  <div>
-                    <GlassCardTitle className="text-[0.9375rem]">
-                      {goal.title}
+                  <div className="min-w-0">
+                    <GlassCardTitle className="flex items-center gap-1 text-[0.9375rem]">
+                      <span className="truncate">{goal.title}</span>
+                      <RowActions
+                        label={goal.title}
+                        onEdit={() =>
+                          openEntity("goal", {
+                            id: goal.id,
+                            initial: toForm.goal(goal),
+                          })
+                        }
+                        onDelete={() =>
+                          startTransition(async () => {
+                            await deleteEntity("goal", goal.id);
+                            router.refresh();
+                          })
+                        }
+                      />
                     </GlassCardTitle>
                     <GlassCardDescription className="mt-1 flex items-center gap-2">
                       <Badge
@@ -169,8 +216,8 @@ export function Goals({ goals }: { goals: GoalData[] }) {
                     const p = krProgress(kr);
                     const done = p >= 1;
                     return (
-                      <div key={kr.id}>
-                        <div className="mb-1.5 flex items-baseline justify-between gap-3 text-xs">
+                      <div key={kr.id} className="group/kr">
+                        <div className="mb-1.5 flex items-center justify-between gap-3 text-xs">
                           <span
                             className={cn(
                               "truncate",
@@ -181,10 +228,28 @@ export function Goals({ goals }: { goals: GoalData[] }) {
                           >
                             {kr.title}
                           </span>
-                          <span className="shrink-0 tabular text-steel">
-                            {kr.current}
-                            {kr.unit && ` ${kr.unit}`} / {kr.target}
-                            {kr.unit && ` ${kr.unit}`}
+                          <span className="flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openEntity("keyResult", {
+                                  id: kr.id,
+                                  initial: toForm.keyResult({
+                                    ...kr,
+                                    goalId: goal.id,
+                                  }),
+                                })
+                              }
+                              className="rounded px-1 text-[0.6875rem] text-steel opacity-0 transition-opacity hover:text-ice group-hover/kr:opacity-100"
+                              aria-label={`Update ${kr.title}`}
+                            >
+                              update
+                            </button>
+                            <span className="tabular text-steel">
+                              {kr.current}
+                              {kr.unit && ` ${kr.unit}`} / {kr.target}
+                              {kr.unit && ` ${kr.unit}`}
+                            </span>
                           </span>
                         </div>
                         <Progress
@@ -195,6 +260,17 @@ export function Goals({ goals }: { goals: GoalData[] }) {
                       </div>
                     );
                   })}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openEntity("keyResult", {
+                        initial: { goalId: goal.id },
+                      })
+                    }
+                    className="w-full rounded-lg border border-dashed border-white/10 py-1.5 text-[0.6875rem] text-steel transition-colors hover:border-ice/30 hover:text-ice"
+                  >
+                    + key result
+                  </button>
                 </GlassCardContent>
               </GlassCard>
             </Rise>

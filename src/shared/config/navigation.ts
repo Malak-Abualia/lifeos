@@ -1,6 +1,8 @@
 import {
   LayoutDashboard,
   CalendarCheck,
+  ClipboardCheck,
+  CalendarRange,
   Repeat,
   Target,
   GraduationCap,
@@ -45,6 +47,20 @@ export const NAV_SECTIONS: NavSection[] = [
         icon: LayoutDashboard,
         description: "Your entire life at a glance",
         accent: "ice",
+      },
+      {
+        href: "/checkin",
+        label: "Daily Check-in",
+        icon: ClipboardCheck,
+        description: "Everything about today in under 3 minutes",
+        accent: "emerald",
+      },
+      {
+        href: "/reviews",
+        label: "Reviews",
+        icon: CalendarRange,
+        description: "Weekly, monthly, and yearly retrospectives",
+        accent: "sapphire",
       },
       {
         href: "/analytics",

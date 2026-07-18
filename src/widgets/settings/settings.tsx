@@ -5,8 +5,10 @@ import { useTheme } from "next-themes";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Download, Moon, Sun, User } from "lucide-react";
+import { Download, Moon, Sun, User, AlertTriangle } from "lucide-react";
+import { useRouter } from "next/navigation";
 
+import { eraseAllData } from "@/features/crud/actions";
 import { Button } from "@/shared/ui/button";
 import {
   GlassCard,
@@ -32,18 +34,19 @@ type ProfileInput = z.infer<typeof profileSchema>;
 const PROFILE_KEY = "lifeos.profile";
 
 const SHORTCUTS: Array<[string, string]> = [
-  ["⌘K", "Open command palette"],
-  ["G then D", "Go to Dashboard"],
-  ["G then P", "Go to Planner"],
-  ["G then H", "Go to Habits"],
-  ["N", "New task (on Planner)"],
-  ["Esc", "Close dialogs"],
+  ["⌘K", "Command palette — go anywhere, create anything"],
+  ["↑↓ then ↵", "Navigate and select in the palette"],
+  ["Esc", "Close any dialog"],
 ];
 
 export function Settings() {
+  const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
   const [savedFlash, setSavedFlash] = React.useState(false);
+  const [erasePhrase, setErasePhrase] = React.useState("");
+  const [erased, setErased] = React.useState(false);
+  const [isPending, startTransition] = React.useTransition();
   React.useEffect(() => setMounted(true), []);
 
   const {
@@ -223,6 +226,54 @@ export function Settings() {
                   </div>
                 </React.Fragment>
               ))}
+            </GlassCardContent>
+          </GlassCard>
+        </Rise>
+
+        {/* Danger zone */}
+        <Rise>
+          <GlassCard className="border-ruby/15">
+            <GlassCardHeader>
+              <GlassCardTitle className="flex items-center gap-2 text-ruby">
+                <AlertTriangle className="size-4" aria-hidden />
+                Danger zone
+              </GlassCardTitle>
+              <GlassCardDescription>
+                Permanently deletes every row in every table. Export first.
+              </GlassCardDescription>
+            </GlassCardHeader>
+            <GlassCardContent className="space-y-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="erase-confirm">
+                  Type <span className="font-mono text-ruby">ERASE</span> to
+                  unlock
+                </Label>
+                <Input
+                  id="erase-confirm"
+                  value={erasePhrase}
+                  onChange={(e) => setErasePhrase(e.target.value)}
+                  placeholder="ERASE"
+                  autoComplete="off"
+                />
+              </div>
+              <Button
+                variant="destructive"
+                disabled={erasePhrase !== "ERASE" || isPending}
+                onClick={() =>
+                  startTransition(async () => {
+                    await eraseAllData(erasePhrase);
+                    setErasePhrase("");
+                    setErased(true);
+                    router.refresh();
+                  })
+                }
+              >
+                {erased
+                  ? "All data erased"
+                  : isPending
+                    ? "Erasing…"
+                    : "Erase all data"}
+              </Button>
             </GlassCardContent>
           </GlassCard>
         </Rise>

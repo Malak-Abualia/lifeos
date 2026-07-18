@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { Search, Bell } from "lucide-react";
 
 import { ALL_MODULES } from "@/shared/config/navigation";
+import { useCommandStore } from "@/features/crud/store";
 import { Button } from "@/shared/ui/button";
 import { Kbd } from "@/shared/ui/kbd";
 import {
@@ -20,6 +21,7 @@ import {
  */
 export function Topbar() {
   const pathname = usePathname();
+  const setPaletteOpen = useCommandStore((s) => s.setPaletteOpen);
   const current =
     ALL_MODULES.find((m) =>
       m.href === "/" ? pathname === "/" : pathname.startsWith(m.href),
@@ -49,8 +51,9 @@ export function Topbar() {
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={() => setPaletteOpen(true)}
             className="glass-subtle hidden h-9 w-56 items-center gap-2.5 rounded-xl px-3 text-left text-xs text-muted-foreground transition-colors duration-200 hover:border-white/12 hover:text-foreground md:flex"
-            aria-label="Search LifeOS"
+            aria-label="Open command palette"
           >
             <Search className="size-3.5" aria-hidden />
             <span className="flex-1">Search anything…</span>

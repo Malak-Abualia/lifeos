@@ -14,10 +14,12 @@ export default async function PlannerPage() {
     select: {
       id: true,
       title: true,
+      date: true,
       startMinute: true,
       durationMin: true,
       priority: true,
       area: true,
+      notes: true,
       done: true,
     },
   });

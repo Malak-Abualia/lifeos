@@ -57,3 +57,25 @@ All tokens live in `src/app/globals.css`:
 - Accessibility: visible `:focus-visible` rings globally, `aria-current` on
   active nav, `aria-label` on icon-only buttons, decorative icons are
   `aria-hidden`.
+
+## CRUD engine (M7)
+
+Every table gets its UI from one pipeline:
+
+```
+shared registry (features/crud/registry.ts)
+  └─ Zod schema + field layout per entity
+       ├─ EntityDialog (widgets/command-center) — auto-generated RHF form
+       ├─ saveEntity / deleteEntity server actions — validate with the
+       │    same schema, map to Prisma via TO_DB, revalidate the tree
+       └─ Command palette "Create" actions
+```
+
+Adding a table to the app = 1 Prisma model + 1 registry entry + a
+`toForm` mapper. The dialog, palette entry, validation, and server
+actions come for free. Module widgets opt in to editing by calling
+`useCommandStore().openEntity(key, { id, initial: toForm.x(row) })`.
+
+The insight engine (`entities/insights/engine.ts`) is range-parameterized:
+AI Insights runs it over 60 days; Reviews runs it per week/month/year and
+adds summaries (`computePeriodSummary`) and recommendations.

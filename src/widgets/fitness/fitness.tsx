@@ -11,9 +11,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Trophy, Activity } from "lucide-react";
+import { Trophy, Activity, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
+import { deleteEntity } from "@/features/crud/actions";
+import { useCommandStore } from "@/features/crud/store";
+import { toForm } from "@/features/crud/to-form";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { RowActions } from "@/shared/ui/row-actions";
 import {
   GlassCard,
   GlassCardContent,
@@ -73,6 +79,9 @@ export function Fitness({
   workouts: WorkoutData[];
   prs: PRData[];
 }) {
+  const router = useRouter();
+  const openEntity = useCommandStore((s) => s.openEntity);
+  const [, startTransition] = React.useTransition();
   /* Weekly aggregate (last 10 weeks) */
   const weeks: { label: string; load: number; sessions: number }[] = [];
   for (let w = 9; w >= 0; w--) {
@@ -184,20 +193,45 @@ export function Fitness({
         {/* PR board */}
         <Rise>
           <GlassCard className="h-full">
-            <GlassCardHeader>
-              <GlassCardTitle>Personal records</GlassCardTitle>
-              <GlassCardDescription>All-time bests</GlassCardDescription>
+            <GlassCardHeader className="flex-row items-center justify-between">
+              <div>
+                <GlassCardTitle>Personal records</GlassCardTitle>
+                <GlassCardDescription>All-time bests</GlassCardDescription>
+              </div>
+              <Button
+                variant="glass"
+                size="icon-sm"
+                onClick={() => openEntity("personalRecord")}
+                aria-label="Log personal record"
+              >
+                <Plus />
+              </Button>
             </GlassCardHeader>
             <GlassCardContent className="space-y-2.5">
               {prs.map((pr) => (
                 <div
                   key={pr.id}
-                  className="flex items-center gap-3 rounded-xl border border-white/6 bg-white/3 px-3.5 py-2.5"
+                  className="group flex items-center gap-3 rounded-xl border border-white/6 bg-white/3 px-3.5 py-2.5"
                 >
                   <Trophy className="size-3.5 shrink-0 text-ice" aria-hidden />
                   <span className="flex-1 truncate text-[0.8125rem]">
                     {pr.exercise}
                   </span>
+                  <RowActions
+                    label={pr.exercise}
+                    onEdit={() =>
+                      openEntity("personalRecord", {
+                        id: pr.id,
+                        initial: toForm.personalRecord(pr),
+                      })
+                    }
+                    onDelete={() =>
+                      startTransition(async () => {
+                        await deleteEntity("personalRecord", pr.id);
+                        router.refresh();
+                      })
+                    }
+                  />
                   <span className="text-[0.8125rem] font-semibold tabular">
                     {pr.value}
                     <span className="ml-0.5 text-[0.6875rem] font-normal text-steel">
@@ -206,6 +240,11 @@ export function Fitness({
                   </span>
                 </div>
               ))}
+              {prs.length === 0 && (
+                <p className="py-4 text-center text-xs text-steel">
+                  No records yet — log your first PR.
+                </p>
+              )}
             </GlassCardContent>
           </GlassCard>
         </Rise>
@@ -214,14 +253,29 @@ export function Fitness({
       {/* Recent sessions */}
       <Rise>
         <GlassCard>
-          <GlassCardHeader>
+          <GlassCardHeader className="flex-row items-center justify-between">
             <GlassCardTitle>Recent sessions</GlassCardTitle>
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={() => openEntity("workout")}
+            >
+              <Plus /> Log workout
+            </Button>
           </GlassCardHeader>
           <GlassCardContent className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
             {recent.map((w) => (
-              <div
+              <button
                 key={w.id}
-                className="rounded-xl border border-white/6 bg-white/3 p-3 text-center"
+                type="button"
+                onClick={() =>
+                  openEntity("workout", {
+                    id: w.id,
+                    initial: toForm.workout(w),
+                  })
+                }
+                className="rounded-xl border border-white/6 bg-white/3 p-3 text-center transition-all duration-200 hover:border-ice/25 hover:bg-white/5"
+                title={`Edit ${w.type} on ${format(w.date, "MMM d")}`}
               >
                 <span className="text-lg" aria-hidden>
                   {TYPE_EMOJI[w.type] ?? "💪"}
@@ -236,8 +290,13 @@ export function Fitness({
                 >
                   <Activity aria-hidden /> {w.load}
                 </Badge>
-              </div>
+              </button>
             ))}
+            {recent.length === 0 && (
+              <p className="col-span-full py-4 text-center text-xs text-steel">
+                No sessions yet — log the first one and the charts wake up.
+              </p>
+            )}
           </GlassCardContent>
         </GlassCard>
       </Rise>

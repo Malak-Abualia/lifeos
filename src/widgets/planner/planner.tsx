@@ -5,9 +5,13 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 
 import { toggleTask, createTask } from "@/features/planner/actions";
+import { deleteEntity } from "@/features/crud/actions";
+import { useCommandStore } from "@/features/crud/store";
+import { toForm } from "@/features/crud/to-form";
 import { Badge } from "@/shared/ui/badge";
 import { Button } from "@/shared/ui/button";
 import { Checkbox } from "@/shared/ui/checkbox";
+import { RowActions } from "@/shared/ui/row-actions";
 import {
   GlassCard,
   GlassCardContent,
@@ -22,10 +26,12 @@ import { cn } from "@/shared/lib/utils";
 export interface PlannerTask {
   id: string;
   title: string;
+  date: Date;
   startMinute: number | null;
   durationMin: number;
   priority: string;
   area: string;
+  notes: string | null;
   done: boolean;
 }
 
@@ -55,6 +61,7 @@ function minuteLabel(min: number) {
 
 export function Planner({ tasks }: { tasks: PlannerTask[] }) {
   const router = useRouter();
+  const openEntity = useCommandStore((s) => s.openEntity);
   const [isPending, startTransition] = React.useTransition();
   const [newTitle, setNewTitle] = React.useState("");
   // Optimistic done-state so checkboxes respond instantly
@@ -242,6 +249,21 @@ export function Planner({ tasks }: { tasks: PlannerTask[] }) {
                   >
                     {task.title}
                   </span>
+                  <RowActions
+                    label={task.title}
+                    onEdit={() =>
+                      openEntity("task", {
+                        id: task.id,
+                        initial: toForm.task(task),
+                      })
+                    }
+                    onDelete={() =>
+                      startTransition(async () => {
+                        await deleteEntity("task", task.id);
+                        router.refresh();
+                      })
+                    }
+                  />
                   {task.startMinute === null && (
                     <Badge variant="steel">backlog</Badge>
                   )}

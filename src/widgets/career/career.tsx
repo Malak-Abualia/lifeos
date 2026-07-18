@@ -2,9 +2,15 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { Trophy, Send, MessageSquare, Milestone, Star } from "lucide-react";
+import { Trophy, Send, MessageSquare, Milestone, Star, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
+import { deleteEntity } from "@/features/crud/actions";
+import { useCommandStore } from "@/features/crud/store";
+import { toForm } from "@/features/crud/to-form";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { RowActions } from "@/shared/ui/row-actions";
 import {
   GlassCard,
   GlassCardContent,
@@ -44,6 +50,9 @@ const APP_STATUS_VARIANT = {
 } as const;
 
 export function Career({ events }: { events: CareerEventData[] }) {
+  const router = useRouter();
+  const openEntity = useCommandStore((s) => s.openEntity);
+  const [, startTransition] = React.useTransition();
   const wins = events.filter((e) => e.type === "win").length;
   const applications = events.filter(
     (e) => e.type === "application" || e.type === "interview",
@@ -57,19 +66,28 @@ export function Career({ events }: { events: CareerEventData[] }) {
       {/* Timeline */}
       <Rise className="xl:col-span-2">
         <GlassCard className="h-full">
-          <GlassCardHeader>
-            <GlassCardTitle>Trajectory</GlassCardTitle>
-            <GlassCardDescription>
-              {wins} wins logged · every entry is ammunition for the next
-              review
-            </GlassCardDescription>
+          <GlassCardHeader className="flex-row items-center justify-between">
+            <div>
+              <GlassCardTitle>Trajectory</GlassCardTitle>
+              <GlassCardDescription>
+                {wins} wins logged · every entry is ammunition for the next
+                review
+              </GlassCardDescription>
+            </div>
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={() => openEntity("careerEvent")}
+            >
+              <Plus /> Log event
+            </Button>
           </GlassCardHeader>
           <GlassCardContent>
             <ol className="relative space-y-6 before:absolute before:inset-y-1 before:left-[13px] before:w-px before:bg-white/8">
               {events.map((event) => {
                 const meta = TYPE_META[event.type] ?? TYPE_META.milestone;
                 return (
-                  <li key={event.id} className="relative flex gap-4 pl-0">
+                  <li key={event.id} className="group relative flex gap-4 pl-0">
                     <span
                       className={cn(
                         "z-10 flex size-7 shrink-0 items-center justify-center rounded-full border backdrop-blur",
@@ -83,6 +101,21 @@ export function Career({ events }: { events: CareerEventData[] }) {
                         <p className="text-[0.8125rem] font-medium leading-snug">
                           {event.title}
                         </p>
+                        <RowActions
+                          label={event.title}
+                          onEdit={() =>
+                            openEntity("careerEvent", {
+                              id: event.id,
+                              initial: toForm.careerEvent(event),
+                            })
+                          }
+                          onDelete={() =>
+                            startTransition(async () => {
+                              await deleteEntity("careerEvent", event.id);
+                              router.refresh();
+                            })
+                          }
+                        />
                         {event.status && (
                           <Badge
                             variant={

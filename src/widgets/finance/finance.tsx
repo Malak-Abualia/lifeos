@@ -19,9 +19,15 @@ import {
   useReactTable,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
+import { deleteEntity } from "@/features/crud/actions";
+import { useCommandStore } from "@/features/crud/store";
+import { toForm } from "@/features/crud/to-form";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { RowActions } from "@/shared/ui/row-actions";
 import {
   GlassCard,
   GlassCardContent,
@@ -90,6 +96,9 @@ function CashflowTooltip({
 const columnHelper = createColumnHelper<TransactionData>();
 
 export function Finance({ transactions }: { transactions: TransactionData[] }) {
+  const router = useRouter();
+  const openEntity = useCommandStore((s) => s.openEntity);
+  const [, startTransition] = React.useTransition();
   /* Monthly aggregates */
   const byMonth = new Map<string, { income: number; spending: number }>();
   for (const t of transactions) {
@@ -313,11 +322,20 @@ export function Finance({ transactions }: { transactions: TransactionData[] }) {
       {/* Transactions table */}
       <Rise>
         <GlassCard>
-          <GlassCardHeader>
-            <GlassCardTitle>Transactions</GlassCardTitle>
-            <GlassCardDescription>
-              {transactions.length} records · click headers to sort
-            </GlassCardDescription>
+          <GlassCardHeader className="flex-row items-center justify-between">
+            <div>
+              <GlassCardTitle>Transactions</GlassCardTitle>
+              <GlassCardDescription>
+                {transactions.length} records · click headers to sort
+              </GlassCardDescription>
+            </div>
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={() => openEntity("transaction")}
+            >
+              <Plus /> Add transaction
+            </Button>
           </GlassCardHeader>
           <GlassCardContent className="overflow-x-auto">
             <table className="w-full min-w-125 border-separate border-spacing-0 text-[0.8125rem]">
@@ -348,6 +366,10 @@ export function Finance({ transactions }: { transactions: TransactionData[] }) {
                         </button>
                       </th>
                     ))}
+                    <th
+                      className="w-16 border-b border-white/8 pb-2.5"
+                      aria-label="Actions"
+                    />
                   </tr>
                 ))}
               </thead>
@@ -355,7 +377,7 @@ export function Finance({ transactions }: { transactions: TransactionData[] }) {
                 {table.getRowModel().rows.slice(0, 15).map((row) => (
                   <tr
                     key={row.id}
-                    className="transition-colors hover:bg-white/3"
+                    className="group transition-colors hover:bg-white/3"
                   >
                     {row.getVisibleCells().map((cell) => (
                       <td
@@ -368,8 +390,36 @@ export function Finance({ transactions }: { transactions: TransactionData[] }) {
                         )}
                       </td>
                     ))}
+                    <td className="border-b border-white/4 py-2.5">
+                      <RowActions
+                        label={row.original.description}
+                        onEdit={() =>
+                          openEntity("transaction", {
+                            id: row.original.id,
+                            initial: toForm.transaction(row.original),
+                          })
+                        }
+                        onDelete={() =>
+                          startTransition(async () => {
+                            await deleteEntity("transaction", row.original.id);
+                            router.refresh();
+                          })
+                        }
+                      />
+                    </td>
                   </tr>
                 ))}
+                {transactions.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-8 text-center text-xs text-steel"
+                    >
+                      No transactions yet — add income and expenses to light
+                      up the cashflow chart.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </GlassCardContent>

@@ -1,9 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, GraduationCap, Hammer, Clock } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { BookOpen, GraduationCap, Hammer, Clock, Plus } from "lucide-react";
 
+import { deleteEntity } from "@/features/crud/actions";
+import { useCommandStore } from "@/features/crud/store";
+import { toForm } from "@/features/crud/to-form";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
+import { RowActions } from "@/shared/ui/row-actions";
 import {
   GlassCard,
   GlassCardContent,
@@ -37,6 +43,9 @@ const COLUMNS = [
 ] as const;
 
 export function Learning({ courses }: { courses: CourseData[] }) {
+  const router = useRouter();
+  const openEntity = useCommandStore((s) => s.openEntity);
+  const [, startTransition] = React.useTransition();
   const totalHours = courses.reduce((s, c) => s + c.hours, 0);
   const active = courses.filter((c) => c.status === "active");
   const doneCount = courses.filter((c) => c.status === "done").length;
@@ -68,15 +77,24 @@ export function Learning({ courses }: { courses: CourseData[] }) {
             </p>
             <p className="mt-1.5 text-xs text-muted-foreground">completed</p>
           </div>
-          <div className="ml-auto hidden items-center gap-2 text-xs text-steel sm:flex">
-            <Clock className="size-3.5" aria-hidden />
-            Avg{" "}
-            {active.length > 0
-              ? (
-                  active.reduce((s, c) => s + c.hours, 0) / active.length
-                ).toFixed(1)
-              : 0}
-            h per active track
+          <div className="ml-auto flex items-center gap-3">
+            <span className="hidden items-center gap-2 text-xs text-steel sm:flex">
+              <Clock className="size-3.5" aria-hidden />
+              Avg{" "}
+              {active.length > 0
+                ? (
+                    active.reduce((s, c) => s + c.hours, 0) / active.length
+                  ).toFixed(1)
+                : 0}
+              h per active track
+            </span>
+            <Button
+              variant="glass"
+              size="sm"
+              onClick={() => openEntity("course")}
+            >
+              <Plus /> Add
+            </Button>
           </div>
         </GlassCard>
       </Rise>
@@ -105,7 +123,7 @@ export function Learning({ courses }: { courses: CourseData[] }) {
                     return (
                       <div
                         key={course.id}
-                        className="rounded-xl border border-white/6 bg-white/3 p-3.5 transition-all duration-200 hover:border-white/12 hover:bg-white/5"
+                        className="group rounded-xl border border-white/6 bg-white/3 p-3.5 transition-all duration-200 hover:border-white/12 hover:bg-white/5"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex min-w-0 items-start gap-2.5">
@@ -124,13 +142,30 @@ export function Learning({ courses }: { courses: CourseData[] }) {
                               </p>
                             </div>
                           </div>
-                          <Badge
-                            variant={
-                              course.status === "done" ? "emerald" : "steel"
-                            }
-                          >
-                            {course.kind}
-                          </Badge>
+                          <span className="flex items-center gap-1">
+                            <RowActions
+                              label={course.title}
+                              onEdit={() =>
+                                openEntity("course", {
+                                  id: course.id,
+                                  initial: toForm.course(course),
+                                })
+                              }
+                              onDelete={() =>
+                                startTransition(async () => {
+                                  await deleteEntity("course", course.id);
+                                  router.refresh();
+                                })
+                              }
+                            />
+                            <Badge
+                              variant={
+                                course.status === "done" ? "emerald" : "steel"
+                              }
+                            >
+                              {course.kind}
+                            </Badge>
+                          </span>
                         </div>
                         {course.status !== "queued" && (
                           <div className="mt-3 flex items-center gap-3">

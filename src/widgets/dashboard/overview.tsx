@@ -19,9 +19,14 @@ import {
   Timer,
   HeartPulse,
   ArrowRight,
+  ClipboardCheck,
+  Sparkles,
+  Plus,
 } from "lucide-react";
 
+import { useCommandStore } from "@/features/crud/store";
 import { Badge } from "@/shared/ui/badge";
+import { Button } from "@/shared/ui/button";
 import {
   GlassCard,
   GlassCardContent,
@@ -75,6 +80,9 @@ function MomentumTooltip({
 }
 
 export function DashboardOverview({ data }: { data: DashboardData }) {
+  const openEntity = useCommandStore((s) => s.openEntity);
+  const isEmpty = data.streaks.length === 0 && data.today.total === 0;
+
   return (
     <Stagger className="space-y-6">
       {/* Greeting */}
@@ -84,10 +92,51 @@ export function DashboardOverview({ data }: { data: DashboardData }) {
           <span className="text-ice">.</span>
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          {data.today.done} of {data.today.total} tasks done today —
-          here&apos;s where your week stands.
+          {isEmpty
+            ? "A blank slate — your operating system is ready for its first real data."
+            : `${data.today.done} of ${data.today.total} tasks done today — here's where your week stands.`}
         </p>
       </Rise>
+
+      {/* First-run onboarding */}
+      {isEmpty && (
+        <Rise>
+          <GlassCard className="relative overflow-hidden p-8">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-24 left-1/3 h-64 w-125 rounded-full bg-ice/6 blur-3xl"
+            />
+            <div className="relative flex flex-col items-start gap-4">
+              <span className="flex size-11 items-center justify-center rounded-xl border border-ice/25 bg-ice/10">
+                <Sparkles className="size-5 text-ice" aria-hidden />
+              </span>
+              <div>
+                <h3 className="text-lg font-semibold tracking-tight">
+                  Make it yours in two minutes
+                </h3>
+                <p className="mt-1 max-w-md text-sm leading-relaxed text-muted-foreground">
+                  Create a habit or two, then run your first daily check-in.
+                  Every chart, correlation, and insight on this dashboard
+                  builds itself from what you enter.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                <Button asChild>
+                  <Link href="/checkin">
+                    <ClipboardCheck /> Start daily check-in
+                  </Link>
+                </Button>
+                <Button variant="glass" onClick={() => openEntity("habit")}>
+                  <Plus /> Create a habit
+                </Button>
+                <Button variant="glass" onClick={() => openEntity("task")}>
+                  <Plus /> Add a task
+                </Button>
+              </div>
+            </div>
+          </GlassCard>
+        </Rise>
+      )}
 
       {/* Stat tiles */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

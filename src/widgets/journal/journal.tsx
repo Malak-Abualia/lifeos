@@ -12,7 +12,11 @@ import {
   journalEntrySchema,
   type JournalEntryInput,
 } from "@/features/journal/schema";
+import { deleteEntity } from "@/features/crud/actions";
+import { useCommandStore } from "@/features/crud/store";
+import { toForm } from "@/features/crud/to-form";
 import { Button } from "@/shared/ui/button";
+import { RowActions } from "@/shared/ui/row-actions";
 import {
   GlassCard,
   GlassCardContent,
@@ -40,6 +44,7 @@ const PROMPTS = [
 
 export function Journal({ entries }: { entries: JournalEntryData[] }) {
   const router = useRouter();
+  const openEntity = useCommandStore((s) => s.openEntity);
   const [isPending, startTransition] = React.useTransition();
   const prompt = React.useMemo(
     () => PROMPTS[new Date().getDate() % PROMPTS.length],
@@ -130,13 +135,30 @@ export function Journal({ entries }: { entries: JournalEntryData[] }) {
       <div className="space-y-4 xl:col-span-3">
         {entries.map((entry) => (
           <Rise key={entry.id}>
-            <GlassCard interactive>
+            <GlassCard interactive className="group">
               <GlassCardHeader className="flex-row items-baseline justify-between">
                 <GlassCardTitle className="text-[0.9375rem]">
                   {entry.title}
                 </GlassCardTitle>
-                <span className="shrink-0 text-[0.6875rem] tabular text-steel">
-                  {format(entry.date, "EEE, MMM d")}
+                <span className="flex shrink-0 items-center gap-1">
+                  <RowActions
+                    label={entry.title}
+                    onEdit={() =>
+                      openEntity("journal", {
+                        id: entry.id,
+                        initial: toForm.journal(entry),
+                      })
+                    }
+                    onDelete={() =>
+                      startTransition(async () => {
+                        await deleteEntity("journal", entry.id);
+                        router.refresh();
+                      })
+                    }
+                  />
+                  <span className="text-[0.6875rem] tabular text-steel">
+                    {format(entry.date, "EEE, MMM d")}
+                  </span>
                 </span>
               </GlassCardHeader>
               <GlassCardContent>

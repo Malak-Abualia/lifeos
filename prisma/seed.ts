@@ -3,9 +3,19 @@
  * Mood, habits, workouts, and finances are loosely correlated so the
  * Analytics and AI Insights modules have real patterns to surface.
  *
- * Run: npx prisma db seed
+ * DESTRUCTIVE: wipes every table before inserting. To protect real
+ * user-entered data, it refuses to run unless SEED_DEMO=1 is set:
+ *   SEED_DEMO=1 npx prisma db seed
  */
 import "dotenv/config";
+
+if (process.env.SEED_DEMO !== "1") {
+  console.error(
+    "Refusing to seed: this WIPES all data and inserts demo rows.\n" +
+      "If you really want that, run with SEED_DEMO=1.",
+  );
+  process.exit(1);
+}
 import { PrismaClient } from "../src/generated/prisma/client.js";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
