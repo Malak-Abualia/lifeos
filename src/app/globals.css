@@ -1,0 +1,242 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ------------------------------------------------------------------ */
+/*  LifeOS — Deep Winter design tokens                                 */
+/* ------------------------------------------------------------------ */
+
+:root {
+  /* Brand palette */
+  --midnight: #08111f;
+  --obsidian: #0b0f19;
+  --ice: #6ec6ff;
+  --sapphire: #1e88e5;
+  --emerald: #10b981;
+  --ruby: #ef4444;
+  --arctic: #f5f7fa;
+  --steel: #6e7b8b;
+
+  /* Semantic — light (rarely used; LifeOS is dark-first) */
+  --background: #eef2f7;
+  --foreground: #0b0f19;
+  --card: rgba(255, 255, 255, 0.72);
+  --card-foreground: #0b0f19;
+  --popover: rgba(255, 255, 255, 0.92);
+  --popover-foreground: #0b0f19;
+  --primary: #1e88e5;
+  --primary-foreground: #f5f7fa;
+  --secondary: rgba(8, 17, 31, 0.06);
+  --secondary-foreground: #0b0f19;
+  --muted: rgba(8, 17, 31, 0.05);
+  --muted-foreground: #556170;
+  --accent: rgba(30, 136, 229, 0.1);
+  --accent-foreground: #0b0f19;
+  --destructive: #ef4444;
+  --success: #10b981;
+  --border: rgba(8, 17, 31, 0.1);
+  --input: rgba(8, 17, 31, 0.12);
+  --ring: #1e88e5;
+
+  --radius: 1rem;
+}
+
+.dark {
+  --background: #08111f;
+  --foreground: #f5f7fa;
+  --card: rgba(255, 255, 255, 0.04);
+  --card-foreground: #f5f7fa;
+  --popover: rgba(13, 21, 36, 0.92);
+  --popover-foreground: #f5f7fa;
+  --primary: #6ec6ff;
+  --primary-foreground: #08111f;
+  --secondary: rgba(255, 255, 255, 0.06);
+  --secondary-foreground: #f5f7fa;
+  --muted: rgba(255, 255, 255, 0.04);
+  --muted-foreground: #8b98a9;
+  --accent: rgba(110, 198, 255, 0.12);
+  --accent-foreground: #f5f7fa;
+  --destructive: #ef4444;
+  --success: #10b981;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #6ec6ff;
+}
+
+/* Chart series colors — validated for lightness band, chroma, CVD
+   separation, and 3:1 contrast against the #08111F surface. */
+:root,
+.dark {
+  --chart-1: #3e9be0;
+  --chart-2: #0ea47a;
+  --chart-3: #1e88e5;
+  --chart-4: #ef4444;
+}
+
+@theme inline {
+  --color-midnight: var(--midnight);
+  --color-obsidian: var(--obsidian);
+  --color-ice: var(--ice);
+  --color-sapphire: var(--sapphire);
+  --color-emerald: var(--emerald);
+  --color-ruby: var(--ruby);
+  --color-arctic: var(--arctic);
+  --color-steel: var(--steel);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 6px);
+  --radius-2xl: calc(var(--radius) + 12px);
+
+  --shadow-glass: 0 8px 32px rgba(3, 8, 18, 0.45);
+  --shadow-glow-ice: 0 0 24px rgba(110, 198, 255, 0.25);
+  --shadow-glow-emerald: 0 0 24px rgba(16, 185, 129, 0.25);
+
+  --ease-swift: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Base                                                               */
+/* ------------------------------------------------------------------ */
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Ambient aurora backdrop — fixed, behind everything */
+.dark body {
+  background-color: var(--midnight);
+  background-image:
+    radial-gradient(1100px 640px at 12% -8%, rgba(30, 136, 229, 0.14), transparent 60%),
+    radial-gradient(900px 560px at 88% 4%, rgba(110, 198, 255, 0.08), transparent 55%),
+    radial-gradient(760px 620px at 55% 110%, rgba(16, 185, 129, 0.06), transparent 55%);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgba(110, 198, 255, 0.28);
+  color: var(--arctic);
+}
+
+/* Focus visibility — keyboard users always get a ring */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Thin, unobtrusive scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(110, 123, 139, 0.28);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(110, 123, 139, 0.45);
+}
+
+/* ------------------------------------------------------------------ */
+/*  Glass utilities                                                    */
+/* ------------------------------------------------------------------ */
+
+@utility glass {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 32px rgba(3, 8, 18, 0.35);
+}
+
+@utility glass-raised {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.09),
+    rgba(255, 255, 255, 0.03)
+  );
+  backdrop-filter: blur(24px) saturate(1.5);
+  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 16px 48px rgba(3, 8, 18, 0.5);
+}
+
+@utility glass-subtle {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@utility text-gradient-ice {
+  background: linear-gradient(120deg, #f5f7fa 20%, #6ec6ff 80%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Numeric alignment for stats and tables */
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
